@@ -1,0 +1,15 @@
+extends layout
+
+block head
+
+block content
+  div.span12
+    form
+      fieldset
+        legend The simple way of sending messages!
+        textarea.span8(rows='20', placeholder='Insert message here.')
+        p
+        #input(class='input-append')
+          input(class='span6', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
+          button(type='submit', class='btn') Send message
+
