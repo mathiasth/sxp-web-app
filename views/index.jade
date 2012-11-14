@@ -1,6 +1,11 @@
 extends layout
 
 block head
+  script(type='text/javascript', src='/socket.io/socket.io.js')
+  script(type='text/javascript')
+    $(document).ready(function() {
+      var socket = io.connect();
+    });
 
 block content
   div.span12
@@ -11,5 +16,5 @@ block content
         p
         #input(class='input-append')
           input(class='span6', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
-          button(type='submit', class='btn') Send message
+          button(type='button', class='btn') Send message
 

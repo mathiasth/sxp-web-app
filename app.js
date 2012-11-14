@@ -10,7 +10,8 @@ var express = require('express')
   , mongoStore  = new mStore({db: db, reapInterval: 60000})
   , cookie      = require('cookie')
   , functions   = require('./functions.js')
-  , flash       = require('connect-flash');
+  , flash       = require('connect-flash')
+  , io          = require('socket.io');
 
 var app = express();
 
@@ -60,7 +61,7 @@ app.post('/auth', function(req, res) {
   })
 });
 
-http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
 
@@ -71,3 +72,43 @@ function requiresLogin(req, res, next) {
     res.redirect('/login');
   }
 };
+
+var sio = io.listen(server);
+
+sio.enable('browser client minification');
+sio.enable('browser client etag');
+sio.enable('browser client gzip');
+
+// 0: error, 1 warn, 2 info, 3 debug
+sio.set('log level', 2);
+
+sio.set('authorization', function(data, callback) {
+  // check for a cookie within the header
+  if (data.headers.cookie) {
+    data.cookie = cookie.parse(data.headers.cookie);
+    data.sessionID = data.cookie['connect.sid'].split('.')[0].split(':')[1];
+    /* find the session document from the database and look, whether a 'user'
+       key is present. in this case, the session's user has already been 
+       authenticated to the application and his corresponding session will also 
+       be authorized for socket.io access */
+    mongoStore.get(data.sessionID, function(error, sessiondata) {
+      if (error) {
+        callback(error, false);
+      } else {
+        var haveIdentifiedUser = sessiondata.hasOwnProperty('user');
+        if (haveIdentifiedUser) {
+          // acceppt the incoming connection
+          callback(false, true);
+        } else {
+          callback('Authorization declined.', false) ;
+        }      
+      }
+    })
+  } else {
+    callback('Authorization declined.', false) ;
+  }
+});
+
+sio.sockets.on('connection', function (socket) {
+  socket.join(socket.handshake.sessionID);
+});
