@@ -1,9 +1,13 @@
 extends layout
 
 block head
+  link(rel='stylesheet', href='/stylesheets/codemirror.css')
   script(type='text/javascript', src='/socket.io/socket.io.js')
+  script(type='text/javascript', src='/javascripts/codemirror/codemirror.js')
+  script(type='text/javascript', src='/javascripts/codemirror/mode/xml/xml.js')
   script(type='text/javascript')
     $(document).ready(function() {
+      var myEditor = CodeMirror.fromTextArea(editor);
       var socket = io.connect();
     });
 
@@ -12,7 +16,7 @@ block content
     form
       fieldset
         legend The simple way of sending messages!
-        textarea.span8(rows='20', placeholder='Insert message here.')
+        textarea.span8(rows='20', id='editor')
         p
         #input(class='input-append')
           input(class='span6', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')

@@ -8,10 +8,14 @@ html
     script(type='text/javascript', src='/javascripts/jquery-1.8.1.js')
     block head
   body
-    div(class='navbar')
+    div.navbar
       div.navbar-inner
-        div.container
-          ...Responsive navbar from http://twitter.github.com/bootstrap/components.html#navbar
         a.brand #{title}
-
+        ul.nav
+          li.active 
+            a(href='/') Home
+          li 
+            a(href='http://www.google.de') Item 2
+          li 
+            a(href='http://www.heise.de') Item 3
     block content

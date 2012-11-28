@@ -45,7 +45,8 @@ app.get('/', requiresLogin, function(req, res) {
 
 app.get('/login', function(req, res) {
   res.render('login', { 
-    title: 'Login'
+    title: 'Login',
+    message: req.flash('error')
   });
 });
 
