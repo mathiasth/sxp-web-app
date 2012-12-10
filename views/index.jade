@@ -1,14 +1,25 @@
 extends layout
 
 block head
-  link(rel='stylesheet', href='/stylesheets/codemirror.css')
+  link(rel='stylesheet', href='/stylesheets/codemirror/codemirror.css')
+  link(rel='stylesheet', href='/stylesheets/codemirror/#{editorTheme}.css')
   script(type='text/javascript', src='/socket.io/socket.io.js')
   script(type='text/javascript', src='/javascripts/codemirror/codemirror.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/xml/xml.js')
   script(type='text/javascript')
     $(document).ready(function() {
-      var myEditor = CodeMirror.fromTextArea(editor);
       var socket = io.connect();
+      socket.on('connect', function() {
+        socket.emit('getConfigurationElementByName', 'xmleditor', function(error, data) {
+          if (error) {
+            alert('Error on getConfigurationElementByName: ' + error);
+          } else {
+            var xmlEditorConfig = data;
+            console.log('the data: ' + JSON.stringify(data));
+            var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
+          }
+        })
+      });
     });
 
 block content

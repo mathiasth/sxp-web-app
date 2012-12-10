@@ -1,4 +1,5 @@
 var express = require('express')
+  , config = require('./config.js')
   , http = require('http')
   , path = require('path')
   , connect     = require('connect')
@@ -39,7 +40,8 @@ app.configure('development', function(){
 app.get('/', requiresLogin, function(req, res) {
   res.render('index', { 
     title: 'SXP Web Application',
-    user: req.session.user }
+    user: req.session.user,
+    editorTheme: config.xmleditor.theme }
   );
 });
 
@@ -112,4 +114,13 @@ sio.set('authorization', function(data, callback) {
 
 sio.sockets.on('connection', function (socket) {
   socket.join(socket.handshake.sessionID);
+  socket.emit('helloClient');
+
+  socket.on('getConfigurationElementByName', function(elementName, callback) {
+    if (config.hasOwnProperty(elementName)) {
+      callback(false, config[elementName]);
+    } else {
+      callback('Configuration element unknown.', false);
+    }
+  });
 });
