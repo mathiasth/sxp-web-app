@@ -5,7 +5,9 @@ block head
   link(rel='stylesheet', href='/stylesheets/codemirror/#{editorTheme}.css')
   script(type='text/javascript', src='/socket.io/socket.io.js')
   script(type='text/javascript', src='/javascripts/codemirror/codemirror.js')
+  script(type='text/javascript', src='/javascripts/codemirror/util/closetag.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/xml/xml.js')
+  script(type='text/javascript', src='/javascripts/codemirror/mode/htmlmixed/htmlmixed.js')
   script(type='text/javascript')
     $(document).ready(function() {
       var socket = io.connect();
@@ -15,6 +17,10 @@ block head
             alert('Error on getConfigurationElementByName: ' + error);
           } else {
             var xmlEditorConfig = data;
+            xmlEditorConfig.extraKeys = {
+              "'>'": function(cm) { cm.closeTag(cm, '>', true); },
+              "'/'": function(cm) { cm.closeTag(cm, '/'); }
+            };
             console.log('the data: ' + JSON.stringify(data));
             var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
           }
@@ -29,7 +35,14 @@ block content
         legend The simple way of sending messages!
         textarea.span8(rows='20', id='editor')
         p
-        #input(class='input-append')
+        div(class='input-append')
           input(class='span6', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
           button(type='button', class='btn') Send message
-
+        div(class='btn-group')
+          a(class='btn') Destination
+          a(class='btn dropdown-toggle', data-toggle="dropdown")
+            span(class='caret')
+          ul(class='dropdown-menu')
+            li
+              a(href='http://10.206.40.35/INT/W6PIncomingProcessor.asp') redg
+                idfh
