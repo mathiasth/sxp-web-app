@@ -8,6 +8,7 @@ block head
   script(type='text/javascript', src='/javascripts/codemirror/util/closetag.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/xml/xml.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/htmlmixed/htmlmixed.js')
+  script(type='text/javascript', src='/javascripts/cfunctions.js')
   script(type='text/javascript')
     $(document).ready(function() {
       var socket = io.connect();
@@ -24,25 +25,25 @@ block head
             console.log('the data: ' + JSON.stringify(data));
             var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
           }
-        })
+        });
       });
+      ClientFunctions();
     });
 
 block content
   div.span12
     form
       fieldset
-        legend The simple way of sending messages!
         textarea.span8(rows='20', id='editor')
         p
-        div(class='input-append')
-          input(class='span6', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
+        div(class='input-append span7')
+          input(class='span5', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
           button(type='button', class='btn') Send message
-        div(class='btn-group')
+        div(class='btn-group span2')
           a(class='btn') Destination
           a(class='btn dropdown-toggle', data-toggle="dropdown")
             span(class='caret')
           ul(class='dropdown-menu')
             li
-              a(href='http://10.206.40.35/INT/W6PIncomingProcessor.asp') redg
+              a(href='http://10.206.40.35/INT/W6PIncomingProcessor.asp', id='changeDestination') redg
                 idfh
