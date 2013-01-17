@@ -12,6 +12,7 @@
     "cookie": "*",
     "connect-mongodb": "*",
     "mongodb": "*",
-    "connect": "*"
+    "connect": "*",
+    "monk": "*"
   }
 }

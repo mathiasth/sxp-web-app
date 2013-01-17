@@ -11,22 +11,7 @@ block head
   script(type='text/javascript', src='/javascripts/cfunctions.js')
   script(type='text/javascript')
     $(document).ready(function() {
-      var socket = io.connect();
-      socket.on('connect', function() {
-        socket.emit('getConfigurationElementByName', 'xmleditor', function(error, data) {
-          if (error) {
-            alert('Error on getConfigurationElementByName: ' + error);
-          } else {
-            var xmlEditorConfig = data;
-            xmlEditorConfig.extraKeys = {
-              "'>'": function(cm) { cm.closeTag(cm, '>', true); },
-              "'/'": function(cm) { cm.closeTag(cm, '/'); }
-            };
-            console.log('the data: ' + JSON.stringify(data));
-            var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
-          }
-        });
-      });
+      
       ClientFunctions();
     });
 
@@ -34,7 +19,7 @@ block content
   div.span12
     form
       fieldset
-        textarea.span8(rows='20', id='editor')
+        textarea.span6(rows='20', id='editor')
         p
         div(class='input-append span7')
           input(class='span5', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
@@ -46,4 +31,31 @@ block content
           ul(class='dropdown-menu')
             li
               a(href='http://10.206.40.35/INT/W6PIncomingProcessor.asp', id='changeDestination') redg
-                idfh
+            li(class='divider')
+            li
+              a(href='#modalDialog', id='manageDestinations')
+                i(class='icon-edit')
+                |  Manage Destinations
+  div(class='modal fade', id='modalDestinationEditor')
+    div(class='modal-header')
+      button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;
+      h3 Manage your destinations
+    div(class='modal-body')
+      p Currently known destination systems:
+      table(class='table table-bordered table-condensed')
+        thead
+          tr
+            th.span1 Name
+            th URL
+            th User
+        tbody(id='destinationTableBody')
+      p
+        a(href='#', id='addDestination') Add new destination
+      div(id='newDestinationForm')
+        form(class='form-inline')
+          fieldset
+            input(class='input-small', type='text', placeholder='Name', id='inDestinationName', maxlength='30')
+            input(class='input-xlarge',type='text', placeholder='URL', id='inDestinationURL', maxlength='128')
+            button(type='submit', class='btn btn-primary', id='destinationSaveButton') Save
+    div(class='modal-footer')
+      a(href='#', class='btn', data-dismiss='modal', aria-hidden='true') Close

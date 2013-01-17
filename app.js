@@ -1,18 +1,20 @@
-var express = require('express')
-  , config = require('./config.js')
-  , http = require('http')
-  , path = require('path')
+var express     = require('express')
+  , config      = require('./config.js')
+  , http        = require('http')
+  , path        = require('path')
   , connect     = require('connect')
+  , connection  = require('monk')(config.db.host + '/' + config.db.name)
   , Db          = require('mongodb').Db
   , Server      = require('mongodb').Server
-  , DbConfig    = new Server('127.0.0.1', 27017, {auto_reconnect: true, native_parser: true})
-  , db          = new Db('sxp', DbConfig, {safe:true})
+  , DbConfig    = new Server(config.db.host, config.db.port, {auto_reconnect: true, native_parser: true})
+  , db          = new Db(config.db.name, DbConfig, {safe:true})
   , mStore      = require('connect-mongodb')
   , mongoStore  = new mStore({db: db, reapInterval: 60000})
   , cookie      = require('cookie')
   , functions   = require('./functions.js')
   , flash       = require('connect-flash')
-  , io          = require('socket.io');
+  , io          = require('socket.io')
+  , destinations = connection.get('destinations');
 
 var app = express();
 
@@ -122,5 +124,36 @@ sio.sockets.on('connection', function (socket) {
     } else {
       callback('Configuration element unknown.', false);
     }
+  });
+
+  socket.on('getSavedDestinations', function(callback) {
+    console.log('EVENT getSavedDestinations received.');
+    mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+      if (error) {
+        console.log('ERROR in getSavedDestinations on getting username from session: %s', error);
+        callback(error, false);
+      } else {
+        var query = {};
+        query['user'] = {
+          $in: [sessiondata.user, 'public']
+        };
+        destinations.find(query, function(error, results) {
+          if (error) {
+            console.log('ERROR in getSavedDestinations on getting user\'s destinations : %s', error);
+            callback(error, false);
+          } else {
+            console.log('RESULT of getting destinations: %s', JSON.stringify(results));
+            callback(false,results);
+          }
+        });
+      }
+    });
+  });
+
+  socket.on('sendNewDestination', function(destination, callback) {
+    console.log(JSON.stringify(destination));
+    // for (var property in destination) {
+    //   if (destination.hasOwnProperty(property) && p)
+    // }
   });
 });
