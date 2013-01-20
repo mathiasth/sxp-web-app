@@ -196,6 +196,41 @@ sio.sockets.on('connection', function (socket) {
       });
     }
   });
+
+  socket.on('deleteDestinationByID', function(id, callback) {
+    console.log('EVENT deleteDestinationByID received: ' + id);
+    if (f.IsBlank(id)) {
+      callback('Destination deletion failed, supplied ID is invalid: ' + id);
+    } else {
+      destinations.findById(id, function(error, doc) {
+        if (error) {
+          callback('Error in deleteDestinationByID when checking for existing destination: ' + error);
+        } else {
+          mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+            if (error) {
+              console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
+              callback(JSON.stringify(error));
+            } else {
+              doc = JSON.parse(doc);
+              var allowedToDelete = (doc.user === sessiondata.user);
+              console.log('isallowedtodelete: ' + allowedToDelete);
+              if (allowedToDelete) {
+                var query = {};
+                query['_id'] = id;
+                destinations.remove(query, function(error) {
+                  if (error) {
+                    callback(error);
+                  } else {
+                    callback(false);
+                  }
+                });
+              }
+            }
+          });
+        }
+      });
+    }
+  });
 });
 
 

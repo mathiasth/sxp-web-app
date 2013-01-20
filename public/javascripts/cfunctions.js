@@ -90,20 +90,53 @@ function ClientFunctions() {
       }
     });
   }
-};
 
-function FillDestinationTable(destinations) {
-  for (var i in destinations) {
-    var destination = destinations[i];
-    var name = '<td>' + destination['name'] + '</td>';
-    var url = '<td>' + destination['url'] + '</td>';
-    var optUse = '<a href="#" id="lnkUseDestination" data-destinationID="' + destination['_id'] + '" title="Use"><i class="icon-play"></i></a>';
-    var optDel = '<a href="#" id="lnkDelDestination" data-destinationID="' + destination['_id'] + '" title="Delete"><i class="icon-remove"></i></a>';
-    var opts = '<td>' + optUse + optDel + '</td>';
-    $("#destinationTableBody").append('<tr>' + name + url + opts + '</tr>');
+  function DeleteDestinationByID(id) {
+    socket.emit('deleteDestinationByID', id, function(error) {
+      if (error) {
+        alert(error);
+      } else {
+        $('#destinationTableBody').empty();
+        socket.emit('getSavedDestinations', function(error, destinations) {
+          if (error) {
+            alert(error);
+          } else {
+            FillDestinationTable(destinations);
+          }
+        });        
+      }
+    });
   }
-  $('#newDestinationForm').css('display','none');
-  $('#modalDestinationEditor').modal('show');
+
+  function FillDestinationTable(destinations) {
+    for (var i in destinations) {
+      var destination = destinations[i];
+      var name = '<td>' + destination['name'] + '</td>';
+      var url = '<td>' + destination['url'] + '</td>';
+      var optUse = '<a href="#" id="lnkUseDestination" data-destinationUrl="' + destination['url'] + '" title="Use"><i class="icon-play"></i></a>';
+      var optDel = '<a href="#" id="lnkDelDestination" data-destinationID="' + destination['_id'] + '" title="Delete"><i class="icon-remove"></i></a>';
+      var opts = '<td>' + optUse + optDel + '</td>';
+      $("#destinationTableBody").append('<tr>' + name + url + opts + '</tr>');    
+    }
+    // unregister click events
+    $('a[id|="lnkUseDestination"]').unbind('click');
+    $('a[id|="lnkDelDestination"]').unbind('click');
+
+    // register events for newly created links
+    $('a[id|="lnkUseDestination"]').click(function(event) {
+      event.preventDefault();
+      $('#url').attr('value', $(this).attr("data-destinationUrl"));
+      $('#modalDestinationEditor').modal('hide');
+    });
+
+    $('a[id|="lnkDelDestination"]').click(function(event) {
+      event.preventDefault();
+      DeleteDestinationByID($(this).attr("data-destinationID"));
+    });
+
+    $('#newDestinationForm').css('display','none');
+    $('#modalDestinationEditor').modal('show');
+  };
 };
 
 function isBlank(str) {
