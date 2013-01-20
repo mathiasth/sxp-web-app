@@ -11,7 +11,7 @@ var express     = require('express')
   , mStore      = require('connect-mongodb')
   , mongoStore  = new mStore({db: db, reapInterval: 60000})
   , cookie      = require('cookie')
-  , functions   = require('./functions.js')
+  , f           = require('./functions.js')
   , flash       = require('connect-flash')
   , io          = require('socket.io')
   , destinations = connection.get('destinations');
@@ -55,7 +55,7 @@ app.get('/login', function(req, res) {
 });
 
 app.post('/auth', function(req, res) {
-  functions.auth(req.body.username, req.body.password, function(error, success) {
+  f.Auth(req.body.username, req.body.password, function(error, success) {
     if (error) {
       req.flash('error',error);
       res.redirect('/login');
@@ -137,7 +137,11 @@ sio.sockets.on('connection', function (socket) {
         query['user'] = {
           $in: [sessiondata.user, 'public']
         };
-        destinations.find(query, function(error, results) {
+        var options = {};
+        options['$orderby'] = {
+          'name' : 1
+        }
+        destinations.find(query, options, function(error, results) {
           if (error) {
             console.log('ERROR in getSavedDestinations on getting user\'s destinations : %s', error);
             callback(error, false);
@@ -151,9 +155,55 @@ sio.sockets.on('connection', function (socket) {
   });
 
   socket.on('sendNewDestination', function(destination, callback) {
-    console.log(JSON.stringify(destination));
-    // for (var property in destination) {
-    //   if (destination.hasOwnProperty(property) && p)
-    // }
+    var stringsEmpty = (f.IsBlank(destination['name']) || f.IsBlank(destination['url']));
+    var isURL = f.TestURL(destination['url']);
+    if (stringsEmpty || !isURL) {
+      callback('Invalid destination received.');
+    } else {
+      // see if the user already has a destination with the given url
+      mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+        if (error) {
+          console.log('ERROR in sendNewDestination on getting username from session: %s', error);
+          callback(error);
+        } else {    
+          var query = {};
+          query['user'] = sessiondata.user;
+          query['urllc'] = destination['url'].toLowerCase();
+          destinations.find(query, function(error, result) {
+            if (error) {
+              console.log('ERROR in sendNewDestination on searching for existing destination: %s', error);
+              callback(error);
+            } else {
+              var resultLength = Object.size(result);
+              if (resultLength != 0) {
+                callback('You already have a destination with this URL: ' + JSON.stringify(result));
+              } else {
+                query['url'] = destination['url'];
+                query['name'] = destination['name'];
+                destinations.insert(query, function(error) {
+                  if (error) {
+                    console.log('ERROR in sendNewDestination on inserting the new destination: %s', error);
+                    callback(error);
+                  } else {
+                    console.log('New destination (%s, %s) for %s has been inserted', destination['name'], destination['url'], sessiondata.user);
+                    callback(false);
+                  }
+                });
+              }
+            }
+          });
+        }
+      });
+    }
   });
 });
+
+
+// function for getting the length of an object
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};

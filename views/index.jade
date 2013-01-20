@@ -29,14 +29,13 @@ block content
           a(class='btn dropdown-toggle', data-toggle="dropdown")
             span(class='caret')
           ul(class='dropdown-menu')
-            li
-              a(href='http://10.206.40.35/INT/W6PIncomingProcessor.asp', id='changeDestination') redg
+            div(id='destinationPlaceholder')
             li(class='divider')
             li
               a(href='#modalDialog', id='manageDestinations')
                 i(class='icon-edit')
                 |  Manage Destinations
-  div(class='modal fade', id='modalDestinationEditor')
+  div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')
       button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;
       h3 Manage your destinations
@@ -47,7 +46,7 @@ block content
           tr
             th.span1 Name
             th URL
-            th User
+            th &nbsp;
         tbody(id='destinationTableBody')
       p
         a(href='#', id='addDestination') Add new destination
