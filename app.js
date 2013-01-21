@@ -129,6 +129,7 @@ sio.sockets.on('connection', function (socket) {
   socket.on('getSavedDestinations', function(callback) {
     console.log('EVENT getSavedDestinations received.');
     mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+      console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
       if (error) {
         console.log('ERROR in getSavedDestinations on getting username from session: %s', error);
         callback(error, false);
@@ -146,7 +147,6 @@ sio.sockets.on('connection', function (socket) {
             console.log('ERROR in getSavedDestinations on getting user\'s destinations : %s', error);
             callback(error, false);
           } else {
-            console.log('RESULT of getting destinations: %s', JSON.stringify(results));
             callback(false,results);
           }
         });
@@ -162,6 +162,7 @@ sio.sockets.on('connection', function (socket) {
     } else {
       // see if the user already has a destination with the given url
       mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+        console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
         if (error) {
           console.log('ERROR in sendNewDestination on getting username from session: %s', error);
           callback(error);
@@ -202,21 +203,22 @@ sio.sockets.on('connection', function (socket) {
     if (f.IsBlank(id)) {
       callback('Destination deletion failed, supplied ID is invalid: ' + id);
     } else {
-      destinations.findById(id, function(error, doc) {
+      mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
         if (error) {
-          callback('Error in deleteDestinationByID when checking for existing destination: ' + error);
+          callback('Error in deleteDestinationByID when getting sessiondata: ' + error);
         } else {
-          mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+          console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
+          destinations.findById(id, function(error, doc) {
             if (error) {
-              console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
-              callback(JSON.stringify(error));
+              callback('Error in deleteDestinationByID when looking up saved destination: ' + error);
             } else {
-              doc = JSON.parse(doc);
+              // doc = JSON.parse(doc);
               var allowedToDelete = (doc.user === sessiondata.user);
               console.log('isallowedtodelete: ' + allowedToDelete);
               if (allowedToDelete) {
                 var query = {};
                 query['_id'] = id;
+                console.log('about to delete document with id ' + JSON.stringify(query));
                 destinations.remove(query, function(error) {
                   if (error) {
                     callback(error);

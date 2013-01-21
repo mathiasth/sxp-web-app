@@ -96,14 +96,16 @@ function ClientFunctions() {
       if (error) {
         alert(error);
       } else {
-        $('#destinationTableBody').empty();
-        socket.emit('getSavedDestinations', function(error, destinations) {
-          if (error) {
-            alert(error);
-          } else {
-            FillDestinationTable(destinations);
-          }
-        });        
+        $('#destinationTableBody').fadeOut('fast', function() {
+          $('#destinationTableBody').empty();
+          socket.emit('getSavedDestinations', function(error, destinations) {
+            if (error) {
+              alert(error);
+            } else {
+              FillDestinationTable(destinations);
+            }
+          }); 
+        });       
       }
     });
   }
@@ -116,7 +118,8 @@ function ClientFunctions() {
       var optUse = '<a href="#" id="lnkUseDestination" data-destinationUrl="' + destination['url'] + '" title="Use"><i class="icon-play"></i></a>';
       var optDel = '<a href="#" id="lnkDelDestination" data-destinationID="' + destination['_id'] + '" title="Delete"><i class="icon-remove"></i></a>';
       var opts = '<td>' + optUse + optDel + '</td>';
-      $("#destinationTableBody").append('<tr>' + name + url + opts + '</tr>');    
+      $("#destinationTableBody").append('<tr>' + name + url + opts + '</tr>');
+      $('#destinationTableBody').fadeIn('fast');
     }
     // unregister click events
     $('a[id|="lnkUseDestination"]').unbind('click');
