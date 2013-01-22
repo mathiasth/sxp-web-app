@@ -53,6 +53,8 @@ function ClientFunctions() {
           alert('Error on saving destination: ' + error);
         } else {
           $('#newDestinationForm').css('display','none');
+          $('#inDestinationName').attr('value', '');
+          $('#inDestinationURL').attr('value', '');
           $('#destinationTableBody').empty();
           socket.emit('getSavedDestinations', function(error, destinations) {
             if (error) {

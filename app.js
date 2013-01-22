@@ -19,7 +19,7 @@ var express     = require('express')
 var app = express();
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 8001);
+  app.set('port', process.env.PORT || 8000);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.logger({ 
@@ -129,7 +129,6 @@ sio.sockets.on('connection', function (socket) {
   socket.on('getSavedDestinations', function(callback) {
     console.log('EVENT getSavedDestinations received.');
     mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
-      console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
       if (error) {
         console.log('ERROR in getSavedDestinations on getting username from session: %s', error);
         callback(error, false);
@@ -162,7 +161,6 @@ sio.sockets.on('connection', function (socket) {
     } else {
       // see if the user already has a destination with the given url
       mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
-        console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
         if (error) {
           console.log('ERROR in sendNewDestination on getting username from session: %s', error);
           callback(error);
@@ -207,7 +205,6 @@ sio.sockets.on('connection', function (socket) {
         if (error) {
           callback('Error in deleteDestinationByID when getting sessiondata: ' + error);
         } else {
-          console.log(socket.handshake.sessionID + ' ' + JSON.stringify(error) + ' ' + JSON.stringify(sessiondata));
           destinations.findById(id, function(error, doc) {
             if (error) {
               callback('Error in deleteDestinationByID when looking up saved destination: ' + error);
