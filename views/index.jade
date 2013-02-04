@@ -20,9 +20,7 @@ block content
       fieldset
         textarea.span6(rows='20', id='editor')
         p
-        div(class='input-append span7')
-          input(class='span5', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
-          button(type='button', class='btn') Send message
+        input(class='span5', type='text', id='url', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
         div(class='btn-group span2')
           a(class='btn') Destination
           a(class='btn dropdown-toggle', data-toggle="dropdown")
@@ -34,6 +32,9 @@ block content
               a(href='#modalDialog', id='manageDestinations')
                 i(class='icon-edit')
                 |  Manage Destinations
+        input(class='span2', type='text', placeholder='Count', id='reqCount', maxlength='7')
+        input(class='span2', type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
+        button(class='btn btn-primary span2', id='sendMessageButton') Send message
   div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')
       button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;

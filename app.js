@@ -230,6 +230,11 @@ sio.sockets.on('connection', function (socket) {
       });
     }
   });
+
+  socket.on('sendMessage', function(options, callback) {
+    console.log('EVENT sendMessage received: ' + JSON.stringify(options));
+    callback(false,true);
+  });
 });
 
 

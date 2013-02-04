@@ -11,6 +11,7 @@ function ClientFunctions() {
           "'/'": function(cm) { cm.closeTag(cm, '/'); }
         };
         var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
+        myEditor.setValue('<hey></hey>');
       }
     });
   });
@@ -68,6 +69,22 @@ function ClientFunctions() {
     }
   });
 
+  $('button[id|="sendMessageButton"]').click(function(event) {
+    event.preventDefault();
+    $(this).addClass('disabled');
+    var options = {};
+    options['url'] = $('#url').attr('value');
+    options['count'] = $('#reqCount').attr('value');
+    options['parallelism'] = $('#parallelism').attr('value');
+    //options['messageBody'] = CodeMirror.myEditor.getValue();
+    socket.emit('sendMessage', options, function(error, status) {
+      if (error) {
+        alert('Error when initiating message sending: ' + error);
+      } else {
+        $(this).removeClass('disabled');
+      }
+    });
+  });
 
   // functions
   function RefreshDestinations() {
