@@ -1,5 +1,6 @@
 function ClientFunctions() {
   var socket = io.connect();
+  var myEditor = new Object;
   socket.on('connect', function() {
     socket.emit('getConfigurationElementByName', 'xmleditor', function(error, data) {
       if (error) {
@@ -10,7 +11,7 @@ function ClientFunctions() {
           "'>'": function(cm) { cm.closeTag(cm, '>', true); },
           "'/'": function(cm) { cm.closeTag(cm, '/'); }
         };
-        var myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
+        myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
         myEditor.setValue('<hey></hey>');
       }
     });
@@ -76,7 +77,7 @@ function ClientFunctions() {
     options['url'] = $('#url').attr('value');
     options['count'] = $('#reqCount').attr('value');
     options['parallelism'] = $('#parallelism').attr('value');
-    //options['messageBody'] = CodeMirror.myEditor.getValue();
+    options['messageBody'] = myEditor.getValue();
     socket.emit('sendMessage', options, function(error, status) {
       if (error) {
         alert('Error when initiating message sending: ' + error);
