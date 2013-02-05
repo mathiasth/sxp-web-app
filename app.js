@@ -14,7 +14,8 @@ var express     = require('express')
   , f           = require('./functions.js')
   , flash       = require('connect-flash')
   , io          = require('socket.io')
-  , destinations = connection.get('destinations');
+  , destinations = connection.get('destinations')
+  , request     = require('request');
 
 var app = express();
 
@@ -233,7 +234,13 @@ sio.sockets.on('connection', function (socket) {
 
   socket.on('sendMessage', function(options, callback) {
     console.log('EVENT sendMessage received: ' + JSON.stringify(options));
-    callback(false,true);
+    var isURL = f.TestURL(options['url']);
+    // empty values for count and parallelism are set to 1
+    options['count'] = f.IsBlank(options['count']) ? 1 : options['count'];
+    options['parallelism'] = f.IsBlank(options['parallelism']) ? 1 : options['parallelism'];
+
+    console.log('processing: ' + JSON.stringify(options));
+    callback(false);
   });
 });
 
