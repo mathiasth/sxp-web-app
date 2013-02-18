@@ -2,13 +2,13 @@ var http = require('http');
 
 var server = http.createServer(function(req, res) {
   if (req.method == 'POST' && req.url === '/incoming') {
-    var datenow = new Date();
     var buffer = '';
     req.on('data', function(chunk) {
       // receive the complete request
       buffer += chunk;
     });
     req.on('end', function () {
+      var datenow = new Date();
       var response = datenow + ' - ok - ' + buffer;
       console.log('respose will be: ' + response);
       res.writeHead(200, {
