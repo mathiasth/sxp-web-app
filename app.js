@@ -17,7 +17,9 @@ var express     = require('express')
   , destinations = connection.get('destinations')
   , request     = require('request');
 
+// globals
 var app = express();
+var transactionActive = false;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 8000);
@@ -232,16 +234,57 @@ sio.sockets.on('connection', function (socket) {
     }
   });
 
-  socket.on('sendMessage', function(options, callback) {
-    console.log('EVENT sendMessage received: ' + JSON.stringify(options));
+  socket.on('sendMultiMessages', function(options, callback) {
+    console.log('EVENT sendMultiMessages received: ' + JSON.stringify(options));
     var isURL = f.TestURL(options['url']);
     // empty values for count and parallelism are set to 1
     options['count'] = f.IsBlank(options['count']) ? 1 : options['count'];
     options['parallelism'] = f.IsBlank(options['parallelism']) ? 1 : options['parallelism'];
-
     console.log('processing: ' + JSON.stringify(options));
-    callback(false);
+    mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+      if (sessiondata && isURL) {
+        if (!transactionActive) {
+          if (options['count'] >= config.app.transactionMinMsg) {
+            transactionActive = true;  
+          }
+          f.DoTransaction(request, options['messageBody'], options['url'], options['count'], options['parallelism'], sessiondata.user, function(error) {
+            if (error) {
+              if (options['count'] >= config.app.transactionMinMsg) {
+                transactionActive = false;
+                console.log('resetting transaction flag: ' + transactionActive);
+              }
+              console.log('ERROR in transaction: ' + error);
+            } else {
+              if (options['count'] >= config.app.transactionMinMsg) {
+                transactionActive = false;
+                console.log('resetting transaction flag: ' + transactionActive);
+              }
+              callback(false);                
+            }
+          });        
+        } else {
+          callback('Active transaction found, please wait.');
+        }
+      }
+    });
   });
+
+  socket.on('sendSingleMessage', function(options, callback) {
+    console.log('EVENT sendSingleMessage received: ' + JSON.stringify(options));
+    var isURL = f.TestURL(options['url']);
+    mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+      if (sessiondata && isURL) {
+        f.sendSingleMessage(request, options['messageBody'], options['url'], sessiondata.user, function(error) {
+          if (error) {
+            console.log('ERROR in SingleMessage: ' + error);
+            callback(error);
+          } else {
+            callback(false);
+          }
+        });
+      }
+    });
+  })
 });
 
 

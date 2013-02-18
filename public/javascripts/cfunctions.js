@@ -73,21 +73,42 @@ function ClientFunctions() {
     }
   });
 
-  $('button[id|="sendMessageButton"]').click(function(event) {
+  $('button[id|="sendMessagesButtonMulti"]').click(function(event) {
     event.preventDefault();
     // disable button to indicate busy state
-    $('button[id|="sendMessageButton"]').addClass('disabled');
+    $('button[id|="sendMessagesButtonMulti"]').addClass('disabled');
+    $('button[id|="sendMessageButtonSingle"]').addClass('disabled');
     var options = {};
     options['url'] = $('#url').attr('value');
     options['count'] = $('#reqCount').attr('value');
     options['parallelism'] = $('#parallelism').attr('value');
     options['messageBody'] = myEditor.getValue();
-    socket.emit('sendMessage', options, function(error) {
+    socket.emit('sendMultiMessages', options, function(error) {
       if (error) {
         alert('Error when initiating message sending: ' + error);
       } else {
         // re-enable button on function return
-        $('button[id|="sendMessageButton"]').removeClass('disabled');
+        $('button[id|="sendMessagesButtonMulti"]').removeClass('disabled');
+        $('button[id|="sendMessageButtonSingle"]').removeClass('disabled');
+      }
+    });
+  });
+
+  $('button[id|="sendMessageButtonSingle"]').click(function(event) {
+    event.preventDefault();
+    // disable button to indicate busy state
+    $('button[id|="sendMessageButtonSingle"]').addClass('disabled');
+    $('button[id|="sendMessagesButtonMulti"]').addClass('disabled');
+    var options = {};
+    options['url'] = $('#url').attr('value');
+    options['messageBody'] = myEditor.getValue();
+    socket.emit('sendSingleMessage', options, function(error) {
+      if (error) {
+        alert('Error when transmitting message: ' + error);
+      } else {
+        // re-enable button on function return
+        $('button[id|="sendMessagesButtonMulti"]').removeClass('disabled');
+        $('button[id|="sendMessageButtonSingle"]').removeClass('disabled');
       }
     });
   });

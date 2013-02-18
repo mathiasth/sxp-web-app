@@ -34,7 +34,9 @@ block content
                 |  Manage Destinations
         input(class='span2', type='text', placeholder='Count', id='reqCount', maxlength='7')
         input(class='span2', type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
-        button(class='btn btn-primary span2', id='sendMessageButton') Send message
+        button(class='btn btn-warning span2', id='sendMessagesButtonMulti') Start transaction
+        button(class='btn btn-primary span2', id='sendMessageButtonSingle') Single message
+    textarea.span6(rows='10', cols='40', id='log')
   div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')
       button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;
