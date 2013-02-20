@@ -274,11 +274,12 @@ sio.sockets.on('connection', function (socket) {
     var isURL = f.TestURL(options['url']);
     mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
       if (sessiondata && isURL) {
-        f.sendSingleMessage(request, options['messageBody'], options['url'], sessiondata.user, function(error) {
+        f.sendSingleMessage(request, options['messageBody'], options['url'], sessiondata.user, function(error, response) {
           if (error) {
             console.log('ERROR in SingleMessage: ' + error);
             callback(error);
           } else {
+            socket.emit('setResponseTextfield', response);
             callback(false);
           }
         });

@@ -9,6 +9,7 @@ config.xmleditor.theme = 'ambiance';
 config.xmleditor.tabSize = 2;
 config.xmleditor.lineNumbers = true;
 config.xmleditor.autofocus = true;
+config.xmleditor.lineWrapping = true;
 
 config.db.host = '127.0.0.1';
 config.db.port = 27017;

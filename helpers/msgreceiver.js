@@ -9,7 +9,7 @@ var server = http.createServer(function(req, res) {
       buffer += chunk;
     });
     req.on('end', function () {
-      var response = datenow + ' - ok - ' + buffer;
+      var response = '<response><date>' + datenow + '</date><originalRequest>' + buffer + '</originalRequest></response>';
       console.log('respose will be: ' + response);
       res.writeHead(200, {
         'Content-Length': response.length,

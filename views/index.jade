@@ -6,6 +6,7 @@ block head
   script(type='text/javascript', src='/socket.io/socket.io.js')
   script(type='text/javascript', src='/javascripts/codemirror/codemirror.js')
   script(type='text/javascript', src='/javascripts/codemirror/util/closetag.js')
+  script(type='text/javascript', src='/javascripts/codemirror/util/formatting.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/xml/xml.js')
   script(type='text/javascript', src='/javascripts/codemirror/mode/htmlmixed/htmlmixed.js')
   script(type='text/javascript', src='/javascripts/cfunctions.js')
@@ -34,8 +35,8 @@ block content
                 |  Manage Destinations
         input(class='span2', type='text', placeholder='Count', id='reqCount', maxlength='7')
         input(class='span2', type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
-        button(class='btn btn-warning span2', id='sendMessagesButtonMulti') Start transaction
         button(class='btn btn-primary span2', id='sendMessageButtonSingle') Single message
+        button(class='btn btn-warning span2', id='sendMessagesButtonMulti') Start transaction
     textarea.span6(rows='10', cols='40', id='log')
   div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')

@@ -24,9 +24,9 @@ function sendSingleMessage(request, messageBody, destinationUrl, createdBy, call
   request.post({url: destinationUrl, body: messageBody}, function(error, r, body) {
     if (error) {
       console.log('ERROR in sendSingleMessage: ' + error);
-      callback(error);
+      callback(error, false);
     } else {
-      callback(false);
+      callback(false, body);
     }
   });
 };

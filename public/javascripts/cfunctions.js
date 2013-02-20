@@ -14,10 +14,24 @@ function ClientFunctions() {
           "'>'": function(cm) { cm.closeTag(cm, '>', true); },
           "'/'": function(cm) { cm.closeTag(cm, '/'); }
         };
+        
+        // create man editor
         myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
-        myEditor.setValue('<hey></hey>');          
+        myEditor.setValue('<hey></hey>');
+
+        xmlEditorConfig.autofocus = false;
+
+        // create response editor
+        responseEditor = CodeMirror.fromTextArea(log, xmlEditorConfig);
       }
     });
+  });
+
+  socket.on('setResponseTextfield', function(content) {
+    responseEditor.setValue(content);
+    CodeMirror.commands["selectAll"](responseEditor);
+    var range = { from: responseEditor.getCursor(true), to: responseEditor.getCursor(false) }
+    responseEditor.autoFormatRange(range.from, range.to);
   });
 
   RefreshDestinations();
