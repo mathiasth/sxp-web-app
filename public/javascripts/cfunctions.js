@@ -34,10 +34,10 @@ function ClientFunctions() {
     responseEditor.autoFormatRange(range.from, range.to);
   });
 
-  RefreshDestinations();
+  RefreshServerData();
   
   $('#modalDestinationEditor').on('hide', function() {
-    RefreshDestinations();
+    RefreshServerData();
   });
 
   // Event listeners
@@ -51,6 +51,23 @@ function ClientFunctions() {
         FillDestinationTable(destinations);
       }
     });
+  });
+
+  $('a[id|="manageTemplates"]').click(function(event) {
+    event.preventDefault();
+    $('#templates').empty();
+    
+    socket.emit('getSavedTemplateNames', function(error, templateNames) {
+      if (error) {
+        alert(error);
+      } else {
+        FillTemplatesTable(templateNames);
+      }
+    });
+  });
+
+  $('a[id|="saveTemplateButton"]').click(function(event) {
+    event.preventDefault();
   });
 
   $('a[id|="addDestination"]').click(function(event) {
@@ -127,8 +144,38 @@ function ClientFunctions() {
     });
   });
 
+  $('button[id|="saveCurrentDocAsTemplate"]').click(function(event) {
+    event.preventDefault();
+    $('button[id|="saveCurrentDocAsTemplate"]').addClass('disabled');
+    if (isBlank($('#templateNewName').val())) {
+      alert('The template name must not be empty.');
+    } else {
+      var message = new Object;
+      message = {
+        name: $('#templateNewName').val(),
+        content: myEditor.getValue()
+      };
+      alert(JSON.stringify(message));
+      socket.emit('saveDocAsTemplate', message, function(error) {
+        if (error) {
+          alert('Error when saving the current document to a template:' + error);
+        } else {
+          $('button[id|="saveCurrentDocAsTemplate"]').removeClass('disabled');
+          socket.emit('getSavedTemplateNames', function(error, templateNames) {
+            if (error) {
+              alert('Error when getting template names: ' + error);
+            } else {
+              $('#templates').empty();
+              FillTemplatesTable(templateNames);
+            }
+          });
+        }
+      });
+    }
+  });
+
   // functions
-  function RefreshDestinations() {
+  function RefreshServerData() {
     socket.emit('getSavedDestinations', function(error, destinations) {
       if (error) {
         alert(error);
@@ -139,14 +186,28 @@ function ClientFunctions() {
           htmlStructure += '<li><a href="' + destination['url'] + '" id="changeDestination">' + destination['name'] + '</a></li>';
         }
         $('#destinationPlaceholder').html(htmlStructure);
-
         $('a[id|="changeDestination"]').unbind('click');
-
         $('a[id|="changeDestination"]').click(function(event) {
           event.preventDefault();
           $('#url').attr('value', $(this).attr("href"));
         });
-
+      }
+    });
+    socket.emit('getSavedTemplateNames', function(error, templateNames) {
+      if (error) {
+        alert(error);
+      } else {
+        var htmlStructure = '';
+        for (var i in templateNames) {
+          var template = templateNames[i];
+          htmlStructure += '<li><a href="#" id="changeEditorContent">' + template + '</a></li>';
+        }
+        $('#templatesPlaceholder').html(htmlStructure);
+        $('a[id|="changeEditorContent"]').unbind('click');
+        $('a[id|="changeEditorContent"]').click(function(event) {
+          event.preventDefault();
+          alert('go and fetch the message for ' + $(this).text() + ' and change editor content');
+        });
       }
     });
   }
@@ -178,7 +239,7 @@ function ClientFunctions() {
       var optUse = '<a href="#" id="lnkUseDestination" data-destinationUrl="' + destination['url'] + '" title="Use"><i class="icon-play"></i></a>';
       var optDel = '<a href="#" id="lnkDelDestination" data-destinationID="' + destination['_id'] + '" title="Delete"><i class="icon-remove"></i></a>';
       var opts = '<td>' + optUse + optDel + '</td>';
-      $("#destinationTableBody").append('<tr>' + name + url + opts + '</tr>');
+      $('#destinationTableBody').append('<tr>' + name + url + opts + '</tr>');
       $('#destinationTableBody').fadeIn('fast');
     }
     // unregister click events
@@ -200,6 +261,34 @@ function ClientFunctions() {
     $('#newDestinationForm').css('display','none');
     $('#modalDestinationEditor').modal('show');
   };
+
+  function FillTemplatesTable(templateNames) {
+    $('#templatesTableBody').empty();
+    for (var i in templateNames) {
+      var templateName = templateNames[i];
+      var name = '<td>' + templateName + '</td>';
+      var optUse = '<a href="#" id="lnkUseTemplate" data-templateName="' + templateName + '" title="Use"><i class="icon-play"></i></a>';
+      var optDel = '<a href="#" id="lnkDelTemplate" data-templateName="' + templateName + '" title="Delete"><i class="icon-remove"></i></a>';
+      var opts = '<td>' + optUse + optDel + '</td>';
+      $('#templatesTableBody').append('<tr>' + name + opts + '</tr>');
+    }
+    // unregister click events
+    $('a[id|="lnkUseTemplate"]').unbind('click');
+    $('a[id|="lnkDelTemplate"]').unbind('click');
+
+    // register events for newly created links
+    $('a[id|="lnkUseTemplate"]').click(function(event) {
+      event.preventDefault();
+      alert('should change the editor content to the content of ' + $(this).attr('data-templateName') + ' and close the modal');
+    });
+
+    $('a[id|="lnkDelTemplate"]').click(function(event) {
+      event.preventDefault();
+      alert('delete the message named ' + $(this).attr('data-templateName') + ' for the current user.');
+    });    
+
+    $('#modalTemplatesEditor').modal('show');
+  }
 };
 
 function isBlank(str) {

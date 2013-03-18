@@ -15,6 +15,7 @@ var express     = require('express')
   , flash       = require('connect-flash')
   , io          = require('socket.io')
   , destinations = connection.get('destinations')
+  , messages    = connection.get('messages')
   , request     = require('request');
 
 // globals
@@ -37,6 +38,9 @@ app.configure(function(){
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });
+
+// DB Index
+messages.index({'user': 1, 'name': 1});
 
 app.configure('development', function(){
   app.use(express.errorHandler());
@@ -154,6 +158,77 @@ sio.sockets.on('connection', function (socket) {
         });
       }
     });
+  });
+
+  socket.on('getSavedTemplateNames', function(callback) {
+    console.log('EVENT getSavedTemplates received.');
+    mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+      if (error) {
+        console.log('ERROR in getSavedTemplates on getting username from session: %s', error);
+        callback(error, false);
+      } else {
+        var query = {};
+        query['user'] = {
+          $in: [sessiondata.user, 'public']
+        };
+        var options = {};
+        options['$orderby'] = {
+          'name' : 1
+        }
+        messages.find(query, options, function(error, messages) {
+          if (error) {
+            console.log('ERROR in getSavedTemplates on getting user\'s templates : %s', error);
+            callback(error, false);
+          } else {
+            var names = new Array;
+            for (var i in messages) {
+              var message = messages[i];
+              names.push(message['name']);
+            }
+            callback(false,names);
+          }
+        });
+      }
+    });
+  });
+
+  socket.on('saveDocAsTemplate', function(message, callback) {
+    var stringsEmpty = (f.IsBlank(message['name']) || f.IsBlank(message['content']));
+    if (stringsEmpty) {
+      callback('Invalid message data received. Neither message name, nor message body must be empty.');
+    } else {
+      mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+        if (error) {
+          console.log('ERROR in sendNewDestination on getting username from session: %s', error);
+        } else {
+          var query = {};
+          query['user'] = sessiondata.user;
+          query['name'] = message.name;
+          messages.find(query, function(error, results) {
+            if (error) {
+              console.log('ERROR in saveDocAsTemplate on searching for existing template: %s', error);
+              callback(error);
+            } else {
+              var resultLength = Object.size(results);
+              if (resultLength != 0) {
+                callback('There is already a message for you with that name. Be creative!');
+              } else {
+                query['content'] = message.content;
+                messages.insert(query, function(error) {
+                  if (error) {
+                    console.log('ERROR in saveDocAsTemplate on inserting the new template: %s', error);
+                    callback(error);
+                  } else {
+                    console.log('New temaplte for %s saved, named %s.', sessiondata.user, message['name']);
+                    callback(false);
+                  }
+                });
+              }
+            }
+          });
+        }
+      });
+    }
   });
 
   socket.on('sendNewDestination', function(destination, callback) {

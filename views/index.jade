@@ -17,26 +17,40 @@ block head
 
 block content
   div.span12
+    textarea(rows='20', id='editor')
     form
       fieldset
-        textarea.span6(rows='20', id='editor')
         p
-        input(class='span5', type='text', id='url', placeholder='URL', value='http://10.32.93.216/INT/W6PIncomingProcessor.asp')
-        div(class='btn-group span2')
-          a(class='btn') Destination
-          a(class='btn dropdown-toggle', data-toggle="dropdown")
-            span(class='caret')
-          ul(class='dropdown-menu')
-            div(id='destinationPlaceholder')
-            li(class='divider')
-            li
-              a(href='#modalDialog', id='manageDestinations')
-                i(class='icon-edit')
-                |  Manage Destinations
-        input(class='span2', type='text', placeholder='Count', id='reqCount', maxlength='7')
-        input(class='span2', type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
-        button(class='btn btn-primary span2', id='sendMessageButtonSingle') Single message
-        button(class='btn btn-warning span2', id='sendMessagesButtonMulti') Start transaction
+          div(class='btn-group span2')
+            a(class='btn', id='saveTemplateButton') Templates
+            a(class='btn dropdown-toggle', data-toggle="dropdown")
+              span(class='caret')
+            ul(class='dropdown-menu')
+              div(id='templatesPlaceholder')
+              li(class='divider')
+              li
+                a(href='#modalDialog', id='manageTemplates')
+                  i(class='icon-edit')
+                  |  Manage Templates
+        p
+          div(class='btn-group span2')
+            a(class='btn') Destination
+            a(class='btn dropdown-toggle', data-toggle="dropdown")
+              span(class='caret')
+            ul(class='dropdown-menu')
+              div(id='destinationPlaceholder')
+              li(class='divider')
+              li
+                a(href='#modalDialog', id='manageDestinations')
+                  i(class='icon-edit')
+                  |  Manage Destinations
+        p
+          input.span1(type='text', placeholder='Count', id='reqCount', maxlength='7') 
+          input.span1(type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
+          input.span4(type='text', id='url', placeholder='URL', value='http://127.0.0.1:6000/incoming')
+        p
+          button.span2(class='btn btn-primary', id='sendMessageButtonSingle') Single message
+          button.span2(class='btn btn-warning', id='sendMessagesButtonMulti') Start transaction
     textarea.span6(rows='10', cols='40', id='log')
   div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')
@@ -59,5 +73,23 @@ block content
             input(class='input-small', type='text', placeholder='Name', id='inDestinationName', maxlength='30')
             input(class='input-xlarge',type='text', placeholder='URL', id='inDestinationURL', maxlength='128')
             button(type='submit', class='btn btn-primary', id='destinationSaveButton') Save
+    div(class='modal-footer')
+      a(href='#', class='btn', data-dismiss='modal', aria-hidden='true') Close
+  div(class='modal-destinations modal fade', id='modalTemplatesEditor')
+    div(class='modal-header')
+      button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;
+      h3 Manage your templates
+    div(class='modal-body')
+      p Templates:
+      table(class='table table-bordered table-condensed')
+        thead
+          tr
+            th.span2 Name
+            th &nbsp;
+        tbody(id='templatesTableBody')
+      p Save current document to database:
+      div(class='input-append')
+        input(class='span3', type='text', placeholder='Enter name', id='templateNewName', maxlength='50')
+        button(class='btn', type='button', id='saveCurrentDocAsTemplate') Save
     div(class='modal-footer')
       a(href='#', class='btn', data-dismiss='modal', aria-hidden='true') Close

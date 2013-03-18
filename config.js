@@ -5,7 +5,7 @@ config.db = {};
 config.app = {};
 
 config.xmleditor.mode = 'text/xml';
-config.xmleditor.theme = 'ambiance';
+config.xmleditor.theme = 'cobalt';
 config.xmleditor.tabSize = 2;
 config.xmleditor.lineNumbers = true;
 config.xmleditor.autofocus = true;
