@@ -17,7 +17,6 @@ function ClientFunctions() {
         
         // create man editor
         myEditor = CodeMirror.fromTextArea(editor, xmlEditorConfig);
-        myEditor.setValue('<hey></hey>');
 
         xmlEditorConfig.autofocus = false;
 
@@ -40,6 +39,10 @@ function ClientFunctions() {
     RefreshServerData();
   });
 
+  $('#modalTemplatesEditor').on('hide', function() {
+    RefreshServerData();
+  });
+
   // Event listeners
   $('a[id|="manageDestinations"]').click(function(event) {
     event.preventDefault();
@@ -55,8 +58,7 @@ function ClientFunctions() {
 
   $('a[id|="manageTemplates"]').click(function(event) {
     event.preventDefault();
-    $('#templates').empty();
-    
+    $('#templatesTableBody').empty();
     socket.emit('getSavedTemplateNames', function(error, templateNames) {
       if (error) {
         alert(error);
@@ -136,6 +138,8 @@ function ClientFunctions() {
     socket.emit('sendSingleMessage', options, function(error) {
       if (error) {
         alert('Error when transmitting message: ' + error);
+        $('button[id|="sendMessagesButtonMulti"]').removeClass('disabled');
+        $('button[id|="sendMessageButtonSingle"]').removeClass('disabled');
       } else {
         // re-enable button on function return
         $('button[id|="sendMessagesButtonMulti"]').removeClass('disabled');
@@ -155,7 +159,6 @@ function ClientFunctions() {
         name: $('#templateNewName').val(),
         content: myEditor.getValue()
       };
-      alert(JSON.stringify(message));
       socket.emit('saveDocAsTemplate', message, function(error) {
         if (error) {
           alert('Error when saving the current document to a template:' + error);
@@ -165,13 +168,18 @@ function ClientFunctions() {
             if (error) {
               alert('Error when getting template names: ' + error);
             } else {
-              $('#templates').empty();
+              $('#templatesTableBody').empty();
               FillTemplatesTable(templateNames);
             }
           });
         }
       });
     }
+  });
+
+  $('a[id|="lnkHintsModal"]').click(function(event) {
+    event.preventDefault();
+    $('#hintsModal').modal('show');
   });
 
   // functions
@@ -206,7 +214,13 @@ function ClientFunctions() {
         $('a[id|="changeEditorContent"]').unbind('click');
         $('a[id|="changeEditorContent"]').click(function(event) {
           event.preventDefault();
-          alert('go and fetch the message for ' + $(this).text() + ' and change editor content');
+          socket.emit('getMessageTemplateByName', $(this).text(), function(error, message) {
+            if (error) {
+              alert('Error on getting message by templateName: ' + error);
+            } else {
+              myEditor.setValue(message);
+            }
+          });
         });
       }
     });
@@ -231,6 +245,25 @@ function ClientFunctions() {
     });
   }
 
+  function DeleteTemplateByName(templateName) {
+    socket.emit('deleteTemplateByName', templateName, function(error) {
+      if (error) {
+        alert(error);
+      } else {
+        $('#templatesTableBody').fadeOut('fast', function() {
+          $('#templatesTableBody').empty();
+          socket.emit('getSavedTemplateNames', function(error, templateNames) {
+            if (error) {
+              alert('Error when getting template names: ' + error);
+            } else {
+              FillTemplatesTable(templateNames);
+            }
+          }); 
+        });       
+      }
+    });
+  }
+
   function FillDestinationTable(destinations) {
     for (var i in destinations) {
       var destination = destinations[i];
@@ -240,8 +273,8 @@ function ClientFunctions() {
       var optDel = '<a href="#" id="lnkDelDestination" data-destinationID="' + destination['_id'] + '" title="Delete"><i class="icon-remove"></i></a>';
       var opts = '<td>' + optUse + optDel + '</td>';
       $('#destinationTableBody').append('<tr>' + name + url + opts + '</tr>');
-      $('#destinationTableBody').fadeIn('fast');
     }
+    $('#destinationTableBody').fadeIn('fast');
     // unregister click events
     $('a[id|="lnkUseDestination"]').unbind('click');
     $('a[id|="lnkDelDestination"]').unbind('click');
@@ -263,7 +296,6 @@ function ClientFunctions() {
   };
 
   function FillTemplatesTable(templateNames) {
-    $('#templatesTableBody').empty();
     for (var i in templateNames) {
       var templateName = templateNames[i];
       var name = '<td>' + templateName + '</td>';
@@ -272,6 +304,8 @@ function ClientFunctions() {
       var opts = '<td>' + optUse + optDel + '</td>';
       $('#templatesTableBody').append('<tr>' + name + opts + '</tr>');
     }
+    $('#templatesTableBody').fadeIn('fast');
+    
     // unregister click events
     $('a[id|="lnkUseTemplate"]').unbind('click');
     $('a[id|="lnkDelTemplate"]').unbind('click');
@@ -279,12 +313,19 @@ function ClientFunctions() {
     // register events for newly created links
     $('a[id|="lnkUseTemplate"]').click(function(event) {
       event.preventDefault();
-      alert('should change the editor content to the content of ' + $(this).attr('data-templateName') + ' and close the modal');
+      socket.emit('getMessageTemplateByName', $(this).attr("data-templateName"), function(error, message) {
+        if (error) {
+          alert('Error on getting message by templateName: ' + error);
+        } else {
+          myEditor.setValue(message);
+          $('#modalTemplatesEditor').modal('hide');
+        }
+      });
     });
 
     $('a[id|="lnkDelTemplate"]').click(function(event) {
       event.preventDefault();
-      alert('delete the message named ' + $(this).attr('data-templateName') + ' for the current user.');
+      DeleteTemplateByName($(this).attr("data-templateName"));
     });    
 
     $('#modalTemplatesEditor').modal('show');

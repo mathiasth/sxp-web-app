@@ -16,7 +16,8 @@ var express     = require('express')
   , io          = require('socket.io')
   , destinations = connection.get('destinations')
   , messages    = connection.get('messages')
-  , request     = require('request');
+  , request     = require('request')
+  , moment      = require('moment');
 
 // globals
 var app = express();
@@ -192,7 +193,42 @@ sio.sockets.on('connection', function (socket) {
     });
   });
 
+  socket.on('getMessageTemplateByName', function(templateName, callback) {
+    console.log('EVENT getMessageTemplateByName received.');
+    if (f.IsBlank(templateName)) {
+      callback('Invalid template name received.');
+    } else {
+      mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+        if (error) {
+          console.log('ERROR in getMessageTemplateByName on getting username from session: %s', error);
+          callback(error);
+        } else {
+          var query = {};
+          query['user'] = sessiondata.user;
+          query['name'] = templateName;
+          messages.find(query, function(error, results) {
+            if (error) {
+              console.log('ERROR in getMessageTemplateByName on searching for template named %s: %s', templateName, error);
+              callback(error);
+            } else {
+              // do some fancy and useful replacing
+              var result = results[0]['content'];
+              var datePartToday = moment().format('YYYY-MM-DD');
+              var datePartTomorrow = moment().add('days', 1).format('YYYY-MM-DD');
+              var datePartYesterday = moment().subtract('days', 1).format('YYYY-MM-DD');
+              result = result.replace('%today%', datePartToday);
+              result = result.replace('%tomorrow%', datePartTomorrow);
+              result = result.replace('%yesterday%', datePartYesterday);
+              callback(false, result);
+            }
+          });
+        }
+      });
+    }
+  });
+
   socket.on('saveDocAsTemplate', function(message, callback) {
+    console.log('EVENT saveDocAsTemplate received.');
     var stringsEmpty = (f.IsBlank(message['name']) || f.IsBlank(message['content']));
     if (stringsEmpty) {
       callback('Invalid message data received. Neither message name, nor message body must be empty.');
@@ -301,6 +337,48 @@ sio.sockets.on('connection', function (socket) {
                     callback(false);
                   }
                 });
+              }
+            }
+          });
+        }
+      });
+    }
+  });
+
+  socket.on('deleteTemplateByName', function(templateName, callback) {
+    console.log('EVENT deleteTemplateByName received: ' + templateName);
+    if (f.IsBlank(templateName)) {
+      callback('Template deletion failed, supplied name is invalid: ' + templateName);
+    } else {
+      mongoStore.get(socket.handshake.sessionID, function(error, sessiondata) {
+        if (error) {
+          callback('Error in deleteTemplateByName when getting sessiondata: ' + error);
+        } else {
+          var query = {};
+          query['name'] = templateName;
+          query['user'] = sessiondata.user;
+          messages.find(query, function(error, docs) {
+            if (error) {
+              callback('Error in deleteTemplateByName when looking up saved template: ' + error);
+            } else {
+              var resultLength = Object.size(docs);
+              if (resultLength === 1) {
+                var doc = docs[0];
+                var allowedToDelete = (doc.user === sessiondata.user);
+                if (allowedToDelete) {
+                  console.log('about to delete template by query ' + JSON.stringify(query));
+                  messages.remove(query, function(error) {
+                    if (error) {
+                      callback(error);
+                    } else {
+                      callback(false);
+                    }
+                  });
+                } else {
+                  callback('You are not the one you are supposed to be. Strange!');
+                }
+              } else {
+                callback('Received more than 1 results when looking up the template to delete.');
               }
             }
           });

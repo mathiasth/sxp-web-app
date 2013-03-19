@@ -31,7 +31,7 @@ block content
               li
                 a(href='#modalDialog', id='manageTemplates')
                   i(class='icon-edit')
-                  |  Manage Templates
+                  |  Manage templates
         p
           div(class='btn-group span2')
             a(class='btn') Destination
@@ -43,14 +43,14 @@ block content
               li
                 a(href='#modalDialog', id='manageDestinations')
                   i(class='icon-edit')
-                  |  Manage Destinations
+                  |  Manage destinations
         p
-          input.span1(type='text', placeholder='Count', id='reqCount', maxlength='7') 
-          input.span1(type='text', placeholder='Parallelism', id='parallelism', maxlength='3')
-          input.span4(type='text', id='url', placeholder='URL', value='http://127.0.0.1:6000/incoming')
+          input.span4(type='text', id='url', placeholder='URL') 
+          //input.span1(type='text', placeholder='Count', id='reqCount', maxlength='7', value='99999') 
+          //input.span1(type='text', placeholder='Parallelism', id='parallelism', maxlength='3', value='1')
         p
           button.span2(class='btn btn-primary', id='sendMessageButtonSingle') Single message
-          button.span2(class='btn btn-warning', id='sendMessagesButtonMulti') Start transaction
+          //button.span2(class='btn btn-warning', id='sendMessagesButtonMulti') Start transaction
     textarea.span6(rows='10', cols='40', id='log')
   div(class='modal-destinations modal fade', id='modalDestinationEditor')
     div(class='modal-header')
@@ -84,12 +84,24 @@ block content
       table(class='table table-bordered table-condensed')
         thead
           tr
-            th.span2 Name
+            th.span4 Name
             th &nbsp;
         tbody(id='templatesTableBody')
       p Save current document to database:
       div(class='input-append')
         input(class='span3', type='text', placeholder='Enter name', id='templateNewName', maxlength='50')
         button(class='btn', type='button', id='saveCurrentDocAsTemplate') Save
+    div(class='modal-footer')
+      a(href='#', class='btn', data-dismiss='modal', aria-hidden='true') Close
+  div(class='modal-destinations modal fade', id='hintsModal')
+    div(class='modal-header')
+      button(type='button', class='close', data-dismiss='modal', aria-hidden='true') &times;
+      h3 Some nice hints
+    div(class='modal-body')
+      p Use variables in your templates.
+      | The application will replace the variables with their values as soon as you select them.
+      | %yesterday% - replaced with e.g. 2013-03-18.
+      | %today% -  replaced with e.g. 2013-03-19.
+      | %tomorrow% -  replaced with e.g. 2013-03-20.
     div(class='modal-footer')
       a(href='#', class='btn', data-dismiss='modal', aria-hidden='true') Close

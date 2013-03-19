@@ -15,6 +15,7 @@
     "connect": "*",
     "monk": "*",
     "socket.io": "*",
-    "request": "*"
+    "request": "*",
+    "moment": "*"
   }
 }

@@ -23,8 +23,8 @@ function DoTransaction(request, messageBody, destinationUrl, messageCount, messa
 function sendSingleMessage(request, messageBody, destinationUrl, createdBy, callback) {
   request.post({url: destinationUrl, body: messageBody}, function(error, r, body) {
     if (error) {
-      console.log('ERROR in sendSingleMessage: ' + error);
-      callback(error, false);
+      console.log('ERROR in sendSingleMessage: ' + JSON.stringify(error));
+      callback(error['code'], false);
     } else {
       callback(false, body);
     }
