@@ -1,6 +1,6 @@
 function Auth(username, password, callback) {
-  var userOk = (username === 'test' && password === 'test');
-  if (userOk) {
+  var validLogin = (username === password && is_int(username));
+  if (validLogin) {
     callback(false, true);
   } else {
     callback('Unauthorized', false);
@@ -30,6 +30,14 @@ function sendSingleMessage(request, messageBody, destinationUrl, createdBy, call
     }
   });
 };
+
+function is_int(value){
+  if ((parseFloat(value) == parseInt(value)) && !isNaN(value)) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 exports.Auth = Auth;
 exports.IsBlank = IsBlank;

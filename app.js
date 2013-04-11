@@ -62,6 +62,14 @@ app.get('/login', function(req, res) {
   });
 });
 
+app.get('/logout', function (req, res) {
+  req.session.destroy(function() {
+    res.render('logout', {
+      title: 'SXP Web Application'
+    });
+  });
+});
+
 app.post('/auth', function(req, res) {
   f.Auth(req.body.username, req.body.password, function(error, success) {
     if (error) {
@@ -204,22 +212,31 @@ sio.sockets.on('connection', function (socket) {
           callback(error);
         } else {
           var query = {};
-          query['user'] = sessiondata.user;
+          query['user'] = {
+            $in: [sessiondata.user, 'public']
+          };
           query['name'] = templateName;
           messages.find(query, function(error, results) {
             if (error) {
               console.log('ERROR in getMessageTemplateByName on searching for template named %s: %s', templateName, error);
               callback(error);
             } else {
-              // do some fancy and useful replacing
-              var result = results[0]['content'];
-              var datePartToday = moment().format('YYYY-MM-DD');
-              var datePartTomorrow = moment().add('days', 1).format('YYYY-MM-DD');
-              var datePartYesterday = moment().subtract('days', 1).format('YYYY-MM-DD');
-              result = result.replace('%today%', datePartToday);
-              result = result.replace('%tomorrow%', datePartTomorrow);
-              result = result.replace('%yesterday%', datePartYesterday);
-              callback(false, result);
+              if (results.length > 0) {
+                // do some fancy and useful replacing
+                var result = results[0]['content'];
+                var datePartToday = moment().format('YYYY-MM-DD');
+                var datePartTomorrow = moment().add('days', 1).format('YYYY-MM-DD');
+                var datePartYesterday = moment().subtract('days', 1).format('YYYY-MM-DD');
+                // result = result.replace('%today%', datePartToday);
+                // result = result.replace('%tomorrow%', datePartTomorrow);
+                // result = result.replace('%yesterday%', datePartYesterday);
+                result = result.replace(/%today%/g, datePartToday);
+                result = result.replace(/%tomorrow%/g, datePartTomorrow);
+                result = result.replace(/%yesterday%/g, datePartYesterday);
+                callback(false, result);
+              } else {
+                callback('Error when fetching message content, not found in database.');
+              }
             }
           });
         }
@@ -238,7 +255,9 @@ sio.sockets.on('connection', function (socket) {
           console.log('ERROR in sendNewDestination on getting username from session: %s', error);
         } else {
           var query = {};
-          query['user'] = sessiondata.user;
+          query['user'] = {
+            $in: [sessiondata.user, 'public']
+          };
           query['name'] = message.name;
           messages.find(query, function(error, results) {
             if (error) {
@@ -247,8 +266,9 @@ sio.sockets.on('connection', function (socket) {
             } else {
               var resultLength = Object.size(results);
               if (resultLength != 0) {
-                callback('There is already a message for you with that name. Be creative!');
+                callback('There is already a message for you or the public role with that name. Be creative!');
               } else {
+                query['user'] = sessiondata.user;
                 query['content'] = message.content;
                 messages.insert(query, function(error) {
                   if (error) {

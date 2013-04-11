@@ -12,8 +12,10 @@ html
       div.navbar-inner
         a.brand #{title}
         ul.nav
-          li.active 
+          li.active(id='liHome') 
             a(href='/') Home
           li 
             a(href='#', id='lnkHintsModal') Hints
+          li(id='liLogout')
+            a(href='/logout') Logout
     block content
